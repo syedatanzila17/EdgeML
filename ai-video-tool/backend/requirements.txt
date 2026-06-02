@@ -1,0 +1,23 @@
+# AI Video Creation Tool — backend dependencies
+
+# Web framework
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+
+# Anthropic Claude SDK (script generation)
+anthropic>=0.28.0
+
+# Text-to-speech narration
+gTTS==2.5.1
+
+# Video assembly
+moviepy==1.0.3
+
+# Image / frame generation
+Pillow>=10.3.0
+
+# Numerical arrays (MoviePy dependency)
+numpy>=1.26.0
+
+# Environment variables
+python-dotenv==1.0.1
