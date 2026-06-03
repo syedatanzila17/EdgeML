@@ -4,7 +4,7 @@ color 0A
 
 echo.
 echo  ================================================
-echo   AI VIDEO CREATOR
+echo   AI VIDEO CREATOR  (Powered by FREE Groq AI)
 echo  ================================================
 echo.
 
@@ -23,53 +23,53 @@ echo  [OK] Python found.
 :: Go to backend folder
 cd /d "%~dp0backend"
 
-:: Install dependencies silently
-echo  [..] Checking dependencies...
+:: Install dependencies
+echo  [..] Checking dependencies (first time takes 2-3 mins)...
 pip install -r requirements.txt -q
 echo  [OK] Dependencies ready.
 
-:: Load saved API key if it exists
+:: Load saved API key if exists
 if exist ".env" (
-    for /f "tokens=2 delims==" %%a in ('findstr "ANTHROPIC_API_KEY" .env') do set ANTHROPIC_API_KEY=%%a
+    for /f "tokens=2 delims==" %%a in ('findstr "GROQ_API_KEY" .env') do set GROQ_API_KEY=%%a
 )
 
-:: Ask for API key only if not saved yet
-if "%ANTHROPIC_API_KEY%"=="" (
+:: Ask for API key only if not saved
+if "%GROQ_API_KEY%"=="" (
     echo.
     echo  ================================================
-    echo   FIRST TIME SETUP - Enter your API Key
+    echo   FREE API KEY SETUP (One time only)
     echo  ================================================
     echo.
-    echo  Get your key from: https://console.anthropic.com
-    echo  It starts with: sk-ant-...
+    echo  STEP 1: Open this in your browser:
+    echo          https://console.groq.com
     echo.
-    set /p ANTHROPIC_API_KEY= Paste your API key and press Enter:
+    echo  STEP 2: Sign up FREE (no credit card needed)
+    echo.
+    echo  STEP 3: Click API Keys - Create API Key - Copy it
+    echo.
+    echo  STEP 4: Paste it below and press Enter
+    echo.
+    set /p GROQ_API_KEY= Paste your FREE Groq API key here:
     echo.
 
-    :: Save key to .env file so we never ask again
-    echo ANTHROPIC_API_KEY=%ANTHROPIC_API_KEY%> .env
+    :: Save key permanently
+    echo GROQ_API_KEY=%GROQ_API_KEY%> .env
     echo  [OK] API key saved! You won't need to enter it again.
 ) else (
-    echo  [OK] API key loaded from saved file.
+    echo  [OK] API key loaded.
 )
 
 echo.
 echo  ================================================
-echo   STARTING SERVER...
+echo   STARTING... Browser will open automatically
 echo  ================================================
 echo.
-echo  App will open in your browser in a few seconds.
-echo.
-echo  IMPORTANT: Keep this window open while using the app.
-echo  To stop: press Ctrl+C
+echo  Keep this window OPEN while using the app.
+echo  Press Ctrl+C to stop.
 echo.
 
-:: Open browser after 5 seconds
 start "" cmd /c "timeout /t 5 >nul && start http://localhost:8000"
 
-:: Run server
 uvicorn main:app --host 0.0.0.0 --port 8000
 
-echo.
-echo  Server stopped. Close this window or run START.bat again.
 pause

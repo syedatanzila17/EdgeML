@@ -1,5 +1,6 @@
 import json
-import anthropic
+import os
+from groq import Groq
 from schemas import Scene, VideoScript
 
 _STYLE_TIPS = {
@@ -17,7 +18,7 @@ _THEMES = {
 
 
 def generate_video_script(topic: str, style: str, duration: int, theme: str = "blue") -> VideoScript:
-    client = anthropic.Anthropic()
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
     num_scenes = max(3, min(10, duration // 12))
     bg_color = _THEMES.get(theme, "#0f3460")
@@ -51,14 +52,14 @@ Return ONLY a valid JSON object — no markdown, no extra text — with this exa
 Ensure the narration for each scene fits comfortably within its `duration` seconds at 140 wpm.
 Make the script compelling and well-paced."""
 
-    message = client.messages.create(
-        model="claude-opus-4-8",
-        max_tokens=2048,
+    response = client.chat.completions.create(
+        model="llama3-70b-8192",
         messages=[{"role": "user", "content": prompt}],
+        max_tokens=2048,
+        temperature=0.7,
     )
 
-    raw = message.content[0].text.strip()
-    # Strip any accidental markdown fences
+    raw = response.choices[0].message.content.strip()
     if raw.startswith("```"):
         raw = raw.split("```")[1]
         if raw.startswith("json"):
