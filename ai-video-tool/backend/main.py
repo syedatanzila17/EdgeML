@@ -2,6 +2,9 @@ import os
 import uuid
 import logging
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()  # loads ANTHROPIC_API_KEY from .env file automatically
 
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
