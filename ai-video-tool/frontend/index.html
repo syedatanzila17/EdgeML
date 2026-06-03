@@ -2,7 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- viewport-fit=cover lets content reach iPhone notch / Dynamic Island -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- PWA / native-app experience -->
+  <meta name="theme-color" content="#6c63ff" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="VideoAI" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+
+  <meta name="description" content="Generate professional AI-powered videos from a text prompt" />
   <title>AI Video Creator</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -12,126 +24,239 @@
     <!-- ── Header ── -->
     <header class="header">
       <div class="header-inner">
-        <div class="logo">
-          <span class="logo-icon">&#9654;</span>
-          <span class="logo-text">AI <strong>Video Creator</strong></span>
+        <div class="logo" aria-label="VideoAI">
+          <div class="logo-mark">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </div>
+          <span class="logo-name">Video<strong>AI</strong></span>
         </div>
-        <p class="tagline">Transform any idea into a professional video in minutes</p>
+
+        <div class="header-actions">
+          <!-- Install as PWA -->
+          <button class="hdr-btn hidden" id="install-btn" aria-label="Install App" title="Install App">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </button>
+          <!-- QR / mobile access -->
+          <button class="hdr-btn" id="qr-btn" aria-label="Access from phone" title="Scan to open on phone">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/>
+              <rect x="2" y="14" width="8" height="8" rx="1"/>
+              <rect x="5" y="5" width="2" height="2" fill="currentColor" stroke="none"/>
+              <rect x="17" y="5" width="2" height="2" fill="currentColor" stroke="none"/>
+              <rect x="5" y="17" width="2" height="2" fill="currentColor" stroke="none"/>
+              <path d="M14 14h2v2h-2v2h2M18 14v2h2M18 18v2h2M20 18h-2"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </header>
 
+    <!-- ── Main scrollable area ── -->
     <main class="main">
 
-      <!-- ── Form Card ── -->
+      <!-- FORM CARD -->
       <section class="card" id="form-card">
-        <h2 class="card-title">Create Your Video</h2>
+        <div class="card-hero">
+          <h1 class="hero-title">Create AI Video</h1>
+          <p class="hero-sub">Describe any topic and get a professional video in minutes</p>
+        </div>
 
         <form id="video-form" novalidate>
 
+          <!-- Topic textarea -->
           <div class="field">
-            <label for="topic">Topic / Description <span class="req">*</span></label>
-            <textarea id="topic" name="topic" rows="3"
-              placeholder="e.g. How machine learning is transforming healthcare, or a 60-second promo for our SaaS product..."
-              required maxlength="500"></textarea>
-            <small class="char-count"><span id="char-count">0</span>/500</small>
+            <label class="field-label" for="topic">
+              Topic / Description <span class="req" aria-hidden="true">*</span>
+            </label>
+            <textarea
+              id="topic" name="topic"
+              rows="4"
+              placeholder="e.g. How machine learning is transforming healthcare, or a 60-second promo for our SaaS product…"
+              required maxlength="500"
+              autocomplete="off" autocorrect="on" spellcheck="true"
+            ></textarea>
+            <div class="field-foot">
+              <span class="field-hint">Be specific for better results</span>
+              <span class="char-count" aria-live="polite"><span id="char-count">0</span>/500</span>
+            </div>
           </div>
 
-          <div class="row-fields">
+          <!-- Style — card picker (mobile-friendly) -->
+          <div class="field">
+            <span class="field-label">Video Style</span>
+            <div class="style-grid" id="style-grid" role="group" aria-label="Video style">
+              <button type="button" class="style-card active" data-value="educational" aria-pressed="true">
+                <span class="style-emoji" aria-hidden="true">🎓</span>
+                <span class="style-name">Educational</span>
+              </button>
+              <button type="button" class="style-card" data-value="promotional" aria-pressed="false">
+                <span class="style-emoji" aria-hidden="true">🔥</span>
+                <span class="style-name">Promotional</span>
+              </button>
+              <button type="button" class="style-card" data-value="storytelling" aria-pressed="false">
+                <span class="style-emoji" aria-hidden="true">📖</span>
+                <span class="style-name">Storytelling</span>
+              </button>
+            </div>
+            <input type="hidden" id="style" name="style" value="educational" />
+          </div>
+
+          <!-- Duration + Theme row -->
+          <div class="two-col">
             <div class="field">
-              <label for="style">Video Style</label>
-              <select id="style" name="style">
-                <option value="educational">&#127891; Educational</option>
-                <option value="promotional">&#128293; Promotional</option>
-                <option value="storytelling">&#128214; Storytelling</option>
-              </select>
+              <label class="field-label" for="duration">Duration</label>
+              <div class="select-wrap">
+                <select id="duration" name="duration">
+                  <option value="30">30 sec</option>
+                  <option value="60" selected>60 sec</option>
+                  <option value="90">90 sec</option>
+                  <option value="120">2 min</option>
+                  <option value="180">3 min</option>
+                </select>
+                <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
             </div>
 
             <div class="field">
-              <label for="duration">Duration (seconds)</label>
-              <select id="duration" name="duration">
-                <option value="30">30 sec</option>
-                <option value="60" selected>60 sec</option>
-                <option value="90">90 sec</option>
-                <option value="120">2 min</option>
-                <option value="180">3 min</option>
-              </select>
+              <label class="field-label" for="theme">Colour Theme</label>
+              <div class="select-wrap">
+                <select id="theme" name="theme">
+                  <option value="blue">Deep Blue</option>
+                  <option value="green">Forest Green</option>
+                  <option value="purple">Royal Purple</option>
+                  <option value="dark">Dark Mode</option>
+                </select>
+                <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
             </div>
+          </div>
 
-            <div class="field">
-              <label for="theme">Color Theme</label>
-              <select id="theme" name="theme">
-                <option value="blue">&#128308; Deep Blue</option>
-                <option value="green">&#128994; Forest Green</option>
-                <option value="purple">&#128995; Royal Purple</option>
-                <option value="dark">&#9899; Dark Mode</option>
-              </select>
+          <!-- Voice speed -->
+          <div class="field">
+            <label class="field-label" for="speed">Voice Speed</label>
+            <div class="speed-pills" id="speed-pills" role="group" aria-label="Voice speed">
+              <button type="button" class="speed-pill" data-value="0.8">Slow</button>
+              <button type="button" class="speed-pill active" data-value="1.0">Normal</button>
+              <button type="button" class="speed-pill" data-value="1.2">Fast</button>
             </div>
-
-            <div class="field">
-              <label for="speed">Voice Speed</label>
-              <select id="speed" name="speed">
-                <option value="0.8">Slow</option>
-                <option value="1.0" selected>Normal</option>
-                <option value="1.2">Fast</option>
-              </select>
-            </div>
+            <input type="hidden" id="speed" name="speed" value="1.0" />
           </div>
 
           <button type="submit" class="btn-primary" id="generate-btn">
-            <span class="btn-icon">&#9889;</span> Generate Video
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            Generate Video
           </button>
 
         </form>
       </section>
 
-      <!-- ── Progress Card ── -->
-      <section class="card hidden" id="progress-card">
+      <!-- PROGRESS CARD -->
+      <section class="card hidden" id="progress-card" aria-live="polite" aria-label="Video generation progress">
         <h2 class="card-title">Generating Your Video</h2>
+
         <div class="status-row">
-          <span class="status-dot" id="status-dot"></span>
+          <span class="status-dot" id="status-dot" aria-hidden="true"></span>
           <span id="status-label">Queued…</span>
         </div>
-        <div class="progress-bar-wrap">
-          <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+
+        <div class="prog-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="prog-track">
+          <div class="prog-fill" id="progress-bar"></div>
         </div>
-        <p class="progress-pct" id="progress-pct">0%</p>
-        <div class="steps">
+        <div class="prog-footer">
+          <span id="progress-pct">0%</span>
+        </div>
+
+        <div class="steps" id="steps">
           <div class="step" id="step-script">
-            <span class="step-icon">&#128196;</span> Generating AI script
+            <div class="step-icon" aria-hidden="true">📄</div>
+            <div class="step-body">
+              <div class="step-title">AI Script</div>
+              <div class="step-sub">Generating scene-by-scene script with Claude</div>
+            </div>
+            <div class="step-badge" aria-hidden="true"></div>
           </div>
           <div class="step" id="step-video">
-            <span class="step-icon">&#127902;</span> Rendering scenes &amp; narration
+            <div class="step-icon" aria-hidden="true">🎬</div>
+            <div class="step-body">
+              <div class="step-title">Render &amp; Narrate</div>
+              <div class="step-sub">Creating frames, audio &amp; transitions</div>
+            </div>
+            <div class="step-badge" aria-hidden="true"></div>
           </div>
           <div class="step" id="step-done">
-            <span class="step-icon">&#9989;</span> Finalising video
+            <div class="step-icon" aria-hidden="true">✅</div>
+            <div class="step-body">
+              <div class="step-title">Finalise</div>
+              <div class="step-sub">Assembling the final MP4</div>
+            </div>
+            <div class="step-badge" aria-hidden="true"></div>
           </div>
         </div>
       </section>
 
-      <!-- ── Script Preview Card ── -->
+      <!-- SCRIPT PREVIEW CARD -->
       <section class="card hidden" id="script-card">
-        <h2 class="card-title">Generated Script</h2>
+        <button class="collapse-row" id="script-toggle" aria-expanded="true" aria-controls="script-content">
+          <h2 class="card-title" style="margin:0">Generated Script</h2>
+          <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
         <div id="script-content"></div>
       </section>
 
-      <!-- ── Result Card ── -->
+      <!-- RESULT CARD -->
       <section class="card hidden" id="result-card">
-        <div class="result-inner">
-          <div class="success-icon">&#127916;</div>
-          <h2>Your Video Is Ready!</h2>
-          <p class="result-sub">Download and share your AI-generated video.</p>
-          <a id="download-link" href="#" class="btn-primary download-btn" download>
-            &#11015; Download MP4
+        <div class="result-top">
+          <div class="result-badge" aria-hidden="true">🎉</div>
+          <h2 class="result-title">Video Ready!</h2>
+          <p class="result-sub">Your AI-generated video is ready to watch and share.</p>
+        </div>
+
+        <!-- In-page video player -->
+        <div class="video-wrap" id="video-wrap">
+          <video
+            id="video-player"
+            controls
+            playsinline
+            preload="metadata"
+            aria-label="Generated video"
+          >
+            Your browser does not support video playback.
+          </video>
+        </div>
+
+        <div class="result-actions">
+          <a id="download-link" href="#" class="btn-primary" download="ai_video.mp4">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Download MP4
           </a>
-          <button class="btn-secondary" id="new-video-btn">&#43; Create Another Video</button>
+          <button class="btn-share" id="share-btn" aria-label="Share video">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            Share
+          </button>
+          <button class="btn-secondary" id="new-video-btn">+ Create Another</button>
         </div>
       </section>
 
-      <!-- ── Error Card ── -->
-      <section class="card hidden error-card" id="error-card">
+      <!-- ERROR CARD -->
+      <section class="card hidden error-card" id="error-card" role="alert">
         <div class="error-inner">
-          <div class="error-icon">&#9888;</div>
-          <h3 id="error-msg">Something went wrong.</h3>
+          <div class="error-icon" aria-hidden="true">⚠️</div>
+          <p id="error-msg" class="error-msg">Something went wrong.</p>
           <button class="btn-secondary" id="retry-btn">Try Again</button>
         </div>
       </section>
@@ -139,10 +264,36 @@
     </main>
 
     <footer class="footer">
-      <p>Powered by <strong>Claude AI</strong> &middot; <strong>MoviePy</strong> &middot; <strong>gTTS</strong></p>
+      <p>Powered by <strong>Claude AI</strong> · <strong>MoviePy</strong> · <strong>gTTS</strong></p>
     </footer>
 
-  </div>
+    <!-- ── QR / Phone-access modal ── -->
+    <div class="modal-overlay hidden" id="qr-modal" role="dialog" aria-modal="true" aria-labelledby="qr-title">
+      <div class="modal-sheet" id="qr-sheet">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="modal-head">
+          <h3 id="qr-title">Open on Your Phone</h3>
+          <button class="sheet-close" id="qr-close" aria-label="Close">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-hint">Scan with your phone's camera — make sure both devices are on the same network.</p>
+          <div class="qr-box" id="qr-box">
+            <img id="qr-img" alt="QR Code to open VideoAI on phone" />
+          </div>
+          <div class="url-row">
+            <span id="qr-url" class="url-text"></span>
+            <button class="copy-btn" id="copy-url">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Toast ── -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  </div><!-- .app -->
 
   <script src="app.js"></script>
 </body>

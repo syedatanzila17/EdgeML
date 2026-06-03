@@ -1,5 +1,6 @@
 import os
 import uuid
+import socket
 import logging
 from pathlib import Path
 
@@ -112,6 +113,31 @@ async def delete_job(job_id: str):
     if path and os.path.exists(path):
         os.remove(path)
     return {"message": "Deleted"}
+
+
+@app.get("/api/network-info", tags=["info"])
+async def network_info():
+    """Return local network addresses so the frontend can build a QR code for phone access."""
+    ips: list[str] = []
+    hostname = "unknown"
+    try:
+        hostname = socket.gethostname()
+        # Primary outbound IP (the interface that reaches the internet)
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("8.8.8.8", 80))
+            ips.append(s.getsockname()[0])
+    except Exception:
+        pass
+
+    try:
+        for info in socket.getaddrinfo(hostname, None):
+            ip = info[4][0]
+            if ":" not in ip and ip != "127.0.0.1" and ip not in ips:
+                ips.append(ip)
+    except Exception:
+        pass
+
+    return {"hostname": hostname, "ips": ips, "port": 8000}
 
 
 # Serve the frontend SPA at /
