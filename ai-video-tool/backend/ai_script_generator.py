@@ -1,6 +1,6 @@
 import json
 import os
-from groq import Groq
+import google.generativeai as genai
 from schemas import Scene, VideoScript
 
 _STYLE_TIPS = {
@@ -18,7 +18,8 @@ _THEMES = {
 
 
 def generate_video_script(topic: str, style: str, duration: int, theme: str = "blue") -> VideoScript:
-    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+    genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+    model = genai.GenerativeModel("gemini-1.5-flash")
 
     num_scenes = max(3, min(10, duration // 12))
     bg_color = _THEMES.get(theme, "#0f3460")
@@ -52,14 +53,9 @@ Return ONLY a valid JSON object — no markdown, no extra text — with this exa
 Ensure the narration for each scene fits comfortably within its `duration` seconds at 140 wpm.
 Make the script compelling and well-paced."""
 
-    response = client.chat.completions.create(
-        model="llama3-70b-8192",
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=2048,
-        temperature=0.7,
-    )
+    response = model.generate_content(prompt)
+    raw = response.text.strip()
 
-    raw = response.choices[0].message.content.strip()
     if raw.startswith("```"):
         raw = raw.split("```")[1]
         if raw.startswith("json"):

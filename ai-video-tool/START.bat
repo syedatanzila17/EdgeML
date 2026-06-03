@@ -4,7 +4,7 @@ color 0A
 
 echo.
 echo  ================================================
-echo   AI VIDEO CREATOR  (Powered by FREE Groq AI)
+echo   AI VIDEO CREATOR  (Powered by FREE Google AI)
 echo  ================================================
 echo.
 
@@ -30,30 +30,30 @@ echo  [OK] Dependencies ready.
 
 :: Load saved API key if exists
 if exist ".env" (
-    for /f "tokens=2 delims==" %%a in ('findstr "GROQ_API_KEY" .env') do set GROQ_API_KEY=%%a
+    for /f "tokens=2 delims==" %%a in ('findstr "GEMINI_API_KEY" .env') do set GEMINI_API_KEY=%%a
 )
 
 :: Ask for API key only if not saved
-if "%GROQ_API_KEY%"=="" (
+if "%GEMINI_API_KEY%"=="" (
     echo.
     echo  ================================================
-    echo   FREE API KEY SETUP (One time only)
+    echo   FREE API KEY SETUP - Google Gemini
     echo  ================================================
     echo.
-    echo  STEP 1: Open this in your browser:
-    echo          https://console.groq.com
+    echo  STEP 1: Open this link in your browser:
+    echo          https://aistudio.google.com/apikey
     echo.
-    echo  STEP 2: Sign up FREE (no credit card needed)
+    echo  STEP 2: Sign in with your Google account (Gmail)
     echo.
-    echo  STEP 3: Click API Keys - Create API Key - Copy it
+    echo  STEP 3: Click "Create API Key" - Copy it
     echo.
     echo  STEP 4: Paste it below and press Enter
     echo.
-    set /p GROQ_API_KEY= Paste your FREE Groq API key here:
+    set /p GEMINI_API_KEY= Paste your FREE Gemini API key here:
     echo.
 
     :: Save key permanently
-    echo GROQ_API_KEY=%GROQ_API_KEY%> .env
+    echo GEMINI_API_KEY=%GEMINI_API_KEY%> .env
     echo  [OK] API key saved! You won't need to enter it again.
 ) else (
     echo  [OK] API key loaded.

@@ -4,8 +4,8 @@
 fastapi==0.111.0
 uvicorn[standard]==0.29.0
 
-# Groq SDK (FREE AI - script generation)
-groq>=0.9.0
+# Google Gemini SDK (FREE AI - script generation)
+google-generativeai>=0.7.0
 
 # Text-to-speech narration
 gTTS==2.5.1
