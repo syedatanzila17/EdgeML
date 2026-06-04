@@ -130,13 +130,15 @@ def create_video(script: VideoScript, theme_name: str = "blue", voice_speed: flo
         generate_narration(scene.narration, audio_path, slow=(voice_speed < 0.85))
 
         audio_clip = AudioFileClip(audio_path)
-        duration = max(audio_clip.duration + 0.3, float(scene.duration))
+        # Use exact audio duration — never extend beyond what exists
+        duration = audio_clip.duration
+        fade = min(0.3, duration / 4)
 
         img_clip = (
             ImageClip(frame, duration=duration)
-            .fx(fadein, 0.4)
-            .fx(fadeout, 0.4)
-            .set_audio(audio_clip.set_duration(duration))
+            .fx(fadein, fade)
+            .fx(fadeout, fade)
+            .set_audio(audio_clip)
         )
         clips.append(img_clip)
 
