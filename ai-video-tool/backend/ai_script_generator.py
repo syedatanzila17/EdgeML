@@ -19,7 +19,7 @@ _THEMES = {
 
 def generate_video_script(topic: str, style: str, duration: int, theme: str = "blue") -> VideoScript:
     genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash")
 
     num_scenes = max(3, min(10, duration // 12))
     bg_color = _THEMES.get(theme, "#0f3460")
