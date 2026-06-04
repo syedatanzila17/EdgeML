@@ -1,13 +1,10 @@
-# AI Video Creation Tool — backend dependencies
+# AI Video Creation Tool - No API key required!
 
 # Web framework
 fastapi==0.111.0
 uvicorn[standard]==0.29.0
 
-# OpenRouter SDK (FREE AI models - no credit card)
-openai>=1.30.0
-
-# Text-to-speech narration
+# Text-to-speech narration (free, built-in)
 gTTS==2.5.1
 
 # Video assembly
@@ -16,7 +13,7 @@ moviepy==1.0.3
 # Image / frame generation
 Pillow>=10.3.0
 
-# Numerical arrays (MoviePy dependency)
+# Numerical arrays
 numpy>=1.26.0
 
 # Environment variables

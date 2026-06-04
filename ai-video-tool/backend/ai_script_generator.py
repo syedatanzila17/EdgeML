@@ -1,13 +1,7 @@
 import json
 import os
-from openai import OpenAI
+import random
 from schemas import Scene, VideoScript
-
-_STYLE_TIPS = {
-    "educational": "clear, informative, well-structured — teach something valuable",
-    "promotional": "engaging, benefit-focused, with a strong call-to-action",
-    "storytelling": "narrative arc, emotional connection, vivid imagery",
-}
 
 _THEMES = {
     "blue": "#0f3460",
@@ -16,56 +10,94 @@ _THEMES = {
     "dark": "#111111",
 }
 
+_EDUCATIONAL_STRUCTURE = [
+    ("Introduction", "Welcome to this video about {topic}. Today we will explore key ideas and insights that will help you understand this subject better."),
+    ("What Is It?", "{topic} is a fascinating subject that has been growing in importance. It refers to the process and methods used to achieve meaningful outcomes in this area."),
+    ("Why It Matters", "Understanding {topic} is more important than ever. It impacts our daily lives and helps us make better decisions in a rapidly changing world."),
+    ("Key Concepts", "There are several important concepts to understand about {topic}. These include the core principles, methods, and applications that define this field."),
+    ("How It Works", "The process behind {topic} involves several steps. First, we identify the problem. Then we apply the right tools and techniques to find solutions."),
+    ("Real World Examples", "We can see {topic} in action all around us. From businesses to everyday life, the applications are vast and growing every day."),
+    ("Benefits", "The benefits of {topic} are clear. It saves time, improves outcomes, and opens up new possibilities that were not available before."),
+    ("Getting Started", "Getting started with {topic} is easier than you think. Begin with the basics, practice consistently, and you will see progress quickly."),
+    ("Summary", "To summarize, {topic} is a powerful concept that offers many benefits. We hope this video has given you a clear understanding of what it is and why it matters."),
+    ("Call to Action", "Thank you for watching this video about {topic}. If you found this helpful, please share it with others. Stay curious and keep learning!"),
+]
+
+_PROMOTIONAL_STRUCTURE = [
+    ("Attention", "Are you struggling with {topic}? You are not alone. Thousands of people face this challenge every day — but there is a solution."),
+    ("The Problem", "The old ways of dealing with {topic} are slow, expensive, and frustrating. It is time for a better approach that actually works."),
+    ("Introducing", "Introducing our solution for {topic}. Designed for real people, built for real results. Simple, powerful, and effective."),
+    ("Key Features", "Our approach to {topic} includes everything you need. Easy to use, proven results, and support every step of the way."),
+    ("How It Works", "Getting started with {topic} takes just three simple steps. Sign up, set up your preferences, and start seeing results immediately."),
+    ("Social Proof", "Thousands of happy customers have already transformed their experience with {topic}. Join a growing community of success stories."),
+    ("Benefits", "With our {topic} solution you will save time, save money, and achieve better results. The advantages speak for themselves."),
+    ("Special Offer", "For a limited time, we are offering exclusive access to our {topic} solution. Do not miss this opportunity to change the way you work."),
+    ("Call to Action", "Ready to get started with {topic}? Visit our website today, sign up for free, and experience the difference for yourself. Act now!"),
+]
+
+_STORYTELLING_STRUCTURE = [
+    ("Setting the Scene", "Imagine a world where {topic} changes everything. A world where possibilities are endless and every challenge becomes an opportunity."),
+    ("The Beginning", "It all started with a simple question about {topic}. Nobody knew at the time that this question would change everything that followed."),
+    ("The Challenge", "The road to mastering {topic} was not easy. There were obstacles, setbacks, and moments of doubt. But every challenge made the journey worthwhile."),
+    ("The Discovery", "Then came the breakthrough moment with {topic}. A new perspective, a new approach, and suddenly everything became clear."),
+    ("The Turning Point", "Everything changed when the true power of {topic} was revealed. What seemed impossible was now within reach for anyone willing to try."),
+    ("The Journey", "The journey through {topic} taught valuable lessons about persistence, creativity, and the importance of never giving up on your goals."),
+    ("The Transformation", "Step by step, {topic} transformed what was possible. Results that once took months now happened in days. The impact was undeniable."),
+    ("The Outcome", "Today, thanks to {topic}, the story has a happy ending. Goals achieved, lives improved, and a future brighter than ever imagined."),
+    ("The Lesson", "The story of {topic} teaches us one powerful lesson — with the right tools and mindset, anything is possible. Your story can start today."),
+    ("Inspiration", "So let this story of {topic} inspire you. Take the first step, embrace the journey, and write your own success story starting right now."),
+]
+
+_STYLES = {
+    "educational": _EDUCATIONAL_STRUCTURE,
+    "promotional": _PROMOTIONAL_STRUCTURE,
+    "storytelling": _STORYTELLING_STRUCTURE,
+}
+
+_VISUALS = [
+    "Text on screen with animated icons",
+    "Bullet points appearing one by one",
+    "Bold headline with supporting graphics",
+    "Animated chart or diagram",
+    "Split screen with comparison",
+    "Full screen text with background",
+    "Key words highlighted in color",
+    "Simple illustration with caption",
+    "Statistics displayed in large font",
+    "Quote card with attribution",
+]
+
+
+def _make_title(topic: str, style: str) -> str:
+    templates = {
+        "educational": f"Understanding {topic.title()} — A Complete Guide",
+        "promotional": f"Transform Your Results with {topic.title()}",
+        "storytelling": f"The {topic.title()} Story — A Journey of Discovery",
+    }
+    return templates.get(style, f"{topic.title()} — What You Need to Know")
+
 
 def generate_video_script(topic: str, style: str, duration: int, theme: str = "blue") -> VideoScript:
-    client = OpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=os.environ.get("OPENROUTER_API_KEY"),
-    )
-
-    num_scenes = max(3, min(10, duration // 12))
     bg_color = _THEMES.get(theme, "#0f3460")
-    style_tip = _STYLE_TIPS.get(style, _STYLE_TIPS["educational"])
+    structure = _STYLES.get(style, _EDUCATIONAL_STRUCTURE)
+    num_scenes = max(3, min(len(structure), duration // 12))
+    scene_duration = round(duration / num_scenes, 1)
 
-    prompt = f"""You are a professional video scriptwriter. Create a {style} video script about:
+    selected = structure[:num_scenes]
+    scenes = []
 
-TOPIC: {topic}
+    for title, narration_template in selected:
+        narration = narration_template.format(topic=topic)
+        scenes.append(Scene(
+            title=title,
+            narration=narration,
+            visual_description=random.choice(_VISUALS),
+            duration=scene_duration,
+            background_color=bg_color,
+        ))
 
-Requirements:
-- Total duration: ~{duration} seconds
-- Number of scenes: {num_scenes}
-- Style: {style_tip}
-- Speaking pace: ~140 words per minute (narration must fit each scene's duration)
-
-Return ONLY a valid JSON object — no markdown, no extra text — with this exact structure:
-{{
-  "title": "Compelling video title",
-  "scenes": [
-    {{
-      "title": "Scene title (short, 3-6 words)",
-      "narration": "Spoken text for this scene. Keep it natural and within the allotted duration.",
-      "visual_description": "What appears on screen (icons, graphics, text overlays, etc.)",
-      "duration": 15,
-      "background_color": "{bg_color}"
-    }}
-  ],
-  "total_duration": {duration}
-}}
-
-Ensure narration fits each scene duration at 140 wpm. Make the script compelling."""
-
-    response = client.chat.completions.create(
-        model="meta-llama/llama-3.1-8b-instruct:free",
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=2048,
+    return VideoScript(
+        title=_make_title(topic, style),
+        scenes=scenes,
+        total_duration=float(duration),
     )
-
-    raw = response.choices[0].message.content.strip()
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-
-    data = json.loads(raw)
-    scenes = [Scene(**s) for s in data["scenes"]]
-    return VideoScript(title=data["title"], scenes=scenes, total_duration=data["total_duration"])
