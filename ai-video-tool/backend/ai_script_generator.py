@@ -1,6 +1,6 @@
 import json
 import os
-import google.generativeai as genai
+from openai import OpenAI
 from schemas import Scene, VideoScript
 
 _STYLE_TIPS = {
@@ -18,8 +18,10 @@ _THEMES = {
 
 
 def generate_video_script(topic: str, style: str, duration: int, theme: str = "blue") -> VideoScript:
-    genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-    model = genai.GenerativeModel("gemini-2.0-flash")
+    client = OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=os.environ.get("OPENROUTER_API_KEY"),
+    )
 
     num_scenes = max(3, min(10, duration // 12))
     bg_color = _THEMES.get(theme, "#0f3460")
@@ -50,12 +52,15 @@ Return ONLY a valid JSON object — no markdown, no extra text — with this exa
   "total_duration": {duration}
 }}
 
-Ensure the narration for each scene fits comfortably within its `duration` seconds at 140 wpm.
-Make the script compelling and well-paced."""
+Ensure narration fits each scene duration at 140 wpm. Make the script compelling."""
 
-    response = model.generate_content(prompt)
-    raw = response.text.strip()
+    response = client.chat.completions.create(
+        model="meta-llama/llama-3.1-8b-instruct:free",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=2048,
+    )
 
+    raw = response.choices[0].message.content.strip()
     if raw.startswith("```"):
         raw = raw.split("```")[1]
         if raw.startswith("json"):

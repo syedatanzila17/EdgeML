@@ -4,64 +4,60 @@ color 0A
 
 echo.
 echo  ================================================
-echo   AI VIDEO CREATOR  (Powered by FREE Google AI)
+echo   AI VIDEO CREATOR  (100% FREE - OpenRouter AI)
 echo  ================================================
 echo.
 
-:: Check Python
 python --version >nul 2>&1
 if errorlevel 1 (
     color 0C
     echo  [ERROR] Python not found.
     echo  Install from: https://python.org
-    echo  Make sure to check "Add Python to PATH"
+    echo  Check "Add Python to PATH" during install!
     pause
     exit /b
 )
 echo  [OK] Python found.
 
-:: Go to backend folder
 cd /d "%~dp0backend"
 
-:: Install dependencies
-echo  [..] Checking dependencies (first time takes 2-3 mins)...
+echo  [..] Checking dependencies (first time: 2-3 mins)...
 pip install -r requirements.txt -q
 echo  [OK] Dependencies ready.
 
-:: Load saved API key if exists
+:: Load saved key
 if exist ".env" (
-    for /f "tokens=2 delims==" %%a in ('findstr "GEMINI_API_KEY" .env') do set GEMINI_API_KEY=%%a
+    for /f "tokens=2 delims==" %%a in ('findstr "OPENROUTER_API_KEY" .env') do set OPENROUTER_API_KEY=%%a
 )
 
-:: Ask for API key only if not saved
-if "%GEMINI_API_KEY%"=="" (
+if "%OPENROUTER_API_KEY%"=="" (
     echo.
     echo  ================================================
-    echo   FREE API KEY SETUP - Google Gemini
+    echo   FREE API KEY SETUP - OpenRouter
     echo  ================================================
     echo.
-    echo  STEP 1: Open this link in your browser:
-    echo          https://aistudio.google.com/apikey
+    echo  STEP 1: Open this in your browser:
+    echo          https://openrouter.ai
     echo.
-    echo  STEP 2: Sign in with your Google account (Gmail)
+    echo  STEP 2: Click "Sign Up" - use Google or Email
+    echo          (No credit card needed!)
     echo.
-    echo  STEP 3: Click "Create API Key" - Copy it
+    echo  STEP 3: Go to: https://openrouter.ai/keys
+    echo          Click "Create Key" - Copy it
     echo.
     echo  STEP 4: Paste it below and press Enter
     echo.
-    set /p GEMINI_API_KEY= Paste your FREE Gemini API key here:
+    set /p OPENROUTER_API_KEY= Paste your FREE OpenRouter key here:
     echo.
-
-    :: Save key permanently
-    echo GEMINI_API_KEY=%GEMINI_API_KEY%> .env
-    echo  [OK] API key saved! You won't need to enter it again.
+    echo OPENROUTER_API_KEY=%OPENROUTER_API_KEY%> .env
+    echo  [OK] Key saved! Won't ask again.
 ) else (
     echo  [OK] API key loaded.
 )
 
 echo.
 echo  ================================================
-echo   STARTING... Browser will open automatically
+echo   STARTING... Browser opens automatically
 echo  ================================================
 echo.
 echo  Keep this window OPEN while using the app.
@@ -69,7 +65,6 @@ echo  Press Ctrl+C to stop.
 echo.
 
 start "" cmd /c "timeout /t 5 >nul && start http://localhost:8000"
-
 uvicorn main:app --host 0.0.0.0 --port 8000
 
 pause
