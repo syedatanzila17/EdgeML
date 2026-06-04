@@ -206,8 +206,8 @@ def create_scene_frame(scene: Scene, theme_name: str, scene_num: int, total: int
 def _ken_burns(clip, zoom=1.06):
     """Slow zoom-in (Ken Burns) effect."""
     w, h = clip.size
-    def make_frame(t):
-        frame = clip.get_frame(t)
+    def make_frame(get_frame, t):
+        frame = get_frame(t)
         scale = 1.0 + (zoom - 1.0) * (t / max(clip.duration, 0.001))
         nw, nh = int(w * scale), int(h * scale)
         img = Image.fromarray(frame).resize((nw, nh), Image.LANCZOS)
